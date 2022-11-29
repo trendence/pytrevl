@@ -11,19 +11,21 @@ port=os.getenv("port")
 database=os.getenv("database")
 
 class PieChart:
-    def __init__(self, id: str, cube: str, x: list, y: list, filters: dict = {}):
+    def __init__(self, id: str, cube: str, title: str, x: list, y: list, filters: dict = {}):
         self.id = id
+        self.title = title
         self.cube = cube
         self.x = x
         self.y = y
         self.name = x
         self.filters = filters
+        self.type = "pie"
     
     def show(self) -> None:
         data = self.get_data()
         fig1, ax1 = plt.subplots()
         ax1.pie(data[self.y], labels = data[self.x])
-        ax1.set_title(self.id)
+        ax1.set_title(self.title)
         ax1.axis('equal')
         plt.show()
 
