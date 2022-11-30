@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pytrevl"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
-  { name="Valentin Lorenzen", email="valentin.lorenzen@trendence.com" },
+  { name="Trendence Institut", email="valentin.lorenzen@trendence.com" },
 ]
 description = "Python interface to handle and modify TREVL backed visualizations"
 readme = "README.md"

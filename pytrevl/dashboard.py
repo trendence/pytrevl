@@ -53,6 +53,5 @@ class Dashboard:
                         text: "{component.title}"
                     series:
                         - name: ${component.cube}.{component.x}
-                          y: ${component.cube}.{component.y}
-                        """
+                          y: ${component.cube}.{component.y}"""
         print (trevl_code)
