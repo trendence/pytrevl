@@ -1,56 +1,20 @@
+'''
+Components module handling Charts and Chart-Visualization
+'''
+
 import plotly.express as px
-import sqlalchemy
 import pandas as pd
-import os
+from highcharts import Highchart
 
-# Get global env variables for SQL - connection
-drivername=os.getenv("DRIVERNAME")
-username=os.getenv("USERNAME")
-password=os.getenv("PASSWORD")
-host=os.getenv("HOST")
-port=os.getenv("PORT")
-database=os.getenv("DATABASE")
+from pytrevl.api.cube import Cube
+from pytrevl.api.x_middle import X_Middle
+from pytrevl.trevl_code_generator import Trevl_Code_Generator
 
-class Plot:
+
+class PieChart():
     '''
-    Plot parent class 
+    PieChart component
     '''
-    def __init__(self):
-        pass
-
-    # Connecting to Cube.js
-    def get_data(self) -> pd.DataFrame:
-
-        engine = sqlalchemy.create_engine(
-                    sqlalchemy.engine.url.URL(
-                        drivername=drivername,
-                        username=username,
-                        password=password,
-                        host=host,
-                        port=port,
-                        database=database,
-                    ),
-                    echo_pool=True,
-        )
-
-        print("Connecting with Cube.js...")
-
-        connection = engine.connect() # Connecting to engine
-
-        # Converting Plot filters to SQL format
-        filters_list = []
-        for filter in self.filters.items():
-            filters_list.append(filter[0] + " = '" + filter[1] + "'")
-        filters_sql = " AND ".join(filters_list)
-
-        query = f"SELECT {self.x}, {self.y} FROM {self.cube} WHERE {filters_sql};"
-
-        df = pd.read_sql_query(query, connection) # Applies SQL query and returns a DataFrame
-
-        return df
-
-class PieChart(Plot):
-
     def __init__(self, id: str, cube: str, title: str, x: list, y: list, filters: dict = {}):
         self.id = id
         self.title = title
@@ -60,16 +24,42 @@ class PieChart(Plot):
         self.name = x
         self.filters = filters
         self.type = "pie"
-    
+
+    def get_trevl(self) -> str:
+        trevl_code_generator = Trevl_Code_Generator(self)
+        trevl_code = trevl_code_generator.create_trevl()
+        return trevl_code
+
+    def show(self) -> Highchart:
+        x_middle_api = X_Middle(self)
+        chart = x_middle_api.get_chart()
+        return chart
+            
+
+'''
+    #Old Cube integration
+
     def show(self) -> None:
         data = self.get_data()
         fig = px.pie(data, values=self.y, names=self.x, title=self.title)
         fig.show()
 
-    
+    def get_data(self) -> pd.DataFrame:
+        cube = Cube(
+            x = self.x,
+            y = self.y,
+            cube = self.cube,
+            filters = self.filters)
+        cube.connect()
+        cube_data = cube.get_data()
+        return cube_data
 
-class BarChart(Plot):
+'''
 
+class BarChart():
+    '''
+    BarChart component
+    '''
     def __init__(self, id: str, cube: str, title: str, x: list, y: list, filters: dict = {}, orientation: str = "h"):
         self.id = id
         self.title = title
@@ -80,8 +70,33 @@ class BarChart(Plot):
         self.filters = filters
         self.orientation = orientation
         self.type = "column"
+
+    def get_trevl(self) -> str:
+        trevl_code_generator = Trevl_Code_Generator(self)
+        trevl_code = trevl_code_generator.create_trevl()
+        return trevl_code
+
+    def show(self) -> Highchart:
+        x_middle_api = X_Middle(self)
+        chart = x_middle_api.get_chart()
+        return chart
     
+
+'''
+    # Old Cube integration
+
     def show(self) -> None:
         data = self.get_data()
         fig = px.bar(data, x=self.x, y=self.y, title=self.title, orientation=self.orientation)
         fig.show()
+
+    def get_data(self) -> pd.DataFrame:
+        cube = Cube(
+            x = self.x,
+            y = self.y,
+            cube = self.cube,
+            filters = self.filters)
+        cube.connect()
+        cube_data = cube.get_data()
+        return cube_data
+'''

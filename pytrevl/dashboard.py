@@ -24,34 +24,4 @@ class Dashboard:
         ...
     
     def show_trevl(self) -> str:
-        trevl_code = f"""
-            description: >-
-            {self.description}
-            'parameters: []"""
-        for component in self.components.values():
-            trevl_code += f"""
-            components:
-                - id: {component.id}
-                    type: chart
-                    queries:
-                    - measures:
-                        - {component.cube}.{component.y}
-                    dimensions:
-                        - {component.cube}.{component.x}
-                    filters:"""
-            for filter, value in component.filters.items():
-                trevl_code += f"""
-                        - member: "{component.cube}.{filter}"
-                          operator: "equals"
-                          values:
-                            - "{value}" """
-            trevl_code += f"""
-                    display:
-                    chart:
-                        type: "{component.type}"
-                    title:
-                        text: "{component.title}"
-                    series:
-                        - name: ${component.cube}.{component.x}
-                          y: ${component.cube}.{component.y}"""
-        print (trevl_code)
+        ...

@@ -1,5 +1,4 @@
 from typing import Protocol
-import pandas as pd
 
 class Component(Protocol):
     '''
@@ -8,5 +7,5 @@ class Component(Protocol):
     def show(self) -> None:
         ...
 
-    def get_data(self) -> pd.DataFrame:
+    def get_data(self) -> None:
         ...
