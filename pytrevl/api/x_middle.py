@@ -5,11 +5,12 @@ Handling X-Middle connections
 import requests
 from highcharts import Highchart
 import yaml
+import os
 
 from pytrevl.component import Component
 from pytrevl.trevl_code_generator import Trevl_Code_Generator
 
-# Get global env variables for SQL - connection
+
 
 
 class X_Middle:
@@ -20,8 +21,10 @@ class X_Middle:
         self.component = component
     
     def get_chart(self) -> Highchart:
-        base_url = "https://x-middle.herokuapp.com/api"
-        basic = requests.auth.HTTPBasicAuth('x', 'awesomev1z')
+        base_url = os.getenv("X_MIDDLE_BASEURL")
+        x_username = os.getenv("X_MIDDLE_USERNAME")
+        x_password = os.getenv("X_MIDDLE_PASSWORD")
+        basic = requests.auth.HTTPBasicAuth(x_username, x_password)
         tcg = Trevl_Code_Generator(self.component)
         trevl_code = tcg.create_trevl()
         yaml_code = yaml.safe_load(trevl_code)
