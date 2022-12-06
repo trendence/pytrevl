@@ -9,4 +9,4 @@ pytrevl.dashboard.Dashboard()
 '''
 
 from .dashboard import Dashboard
-from .components import PieChart, BarChart
+from .components import PieChart, BarChart, LineChart

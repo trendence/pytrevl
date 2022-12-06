@@ -18,7 +18,8 @@ class Dashboard:
 
     def show(self) -> None:
         for component in self.components.values():
-            component.show()
+            display(component.show()) # Render Charts in Jupyter
+            
 
     def update(self) -> None:
         ...
