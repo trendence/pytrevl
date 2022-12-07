@@ -5,9 +5,9 @@ setup(
     version='0.0.2',    
     description='Python interface to handle and modify TREVL backed visualizations',
     url='https://github.com/trendence/pytrevl',
-    author='Trendence Institut',
+    author='Trendence Institut GmbH',
     author_email='valentin.lorenzen@trendence.com',
-    license='BSD 2-clause',
+    license='MIT License',
     packages=['pytrevl', 'pytrevl.api'],
     install_requires=['numpy>=1.23.5'
                       'pandas>=1.5',        
@@ -20,11 +20,6 @@ setup(
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: BSD License',  
         'Operating System :: POSIX :: Linux',        
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.9',
     ],
 )

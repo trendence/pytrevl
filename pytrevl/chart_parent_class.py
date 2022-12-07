@@ -8,10 +8,6 @@ class Chart:
     '''
     Chart parent class
     '''
-    def get_trevl(self) -> str:
-        trevl_code_generator = Trevl_Code_Generator(self)
-        trevl_code = trevl_code_generator.create_trevl()
-        return trevl_code
         
     def get_yaml(self) -> dict:
         trevl_code_generator = Trevl_Code_Generator(self)
