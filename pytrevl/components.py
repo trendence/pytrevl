@@ -2,11 +2,7 @@
 Components module handling Charts and Chart-Visualization
 '''
 
-from highcharts import Highchart
 from pytrevl.chart_parent_class import Chart
-
-from pytrevl.api.x_middle import X_Middle
-from pytrevl.trevl_code_generator import Trevl_Code_Generator
 
 class PieChart(Chart):
     '''
