@@ -126,6 +126,17 @@ class X_Middle:
             raise Exception(f"Component type {self.component.type} is not defined.")
 
         # Add data to highcharts object
-        self.highchart.add_data_set(data, self.component.type)
+        if hasattr(self.component, "innerSize"):
+            donut_size = self.highcharts_json["series"][0]["size"]
+            donut_innerSize = self.highcharts_json["series"][0]["innerSize"]
+            self.highchart.add_data_set(
+                data,
+                self.component.type,
+                size = donut_size,
+                innerSize = donut_innerSize)
+        else:
+            self.highchart.add_data_set(
+                data,
+                self.component.type)            
 
         return data
