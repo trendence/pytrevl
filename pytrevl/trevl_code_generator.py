@@ -25,7 +25,7 @@ class Trevl_Code_Generator:
                         'title': {'text': self.component.title},
                         'series': [{
                             'name': "$" + self.component.cube + "." + self.component.dimension,
-                            'x': "$" + self.component.cube + "." + self.component.dimension,
+                            
                             'y': "$" + self.component.cube + "." + self.component.measure}
                             ]}
                 }]}
@@ -34,6 +34,10 @@ class Trevl_Code_Generator:
                 'member': self.component.cube + "." + filter[0],
                 'operator': filter[1],
                 'values': [filter[2]]})
+
+        if hasattr(self.component, "innerSize"):
+          yaml['components'][0]['display']['series'][0]['size'] = self.component.size
+          yaml['components'][0]['display']['series'][0]['innerSize'] = self.component.innerSize
         return yaml
 
 '''
