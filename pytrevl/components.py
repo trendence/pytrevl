@@ -1,7 +1,7 @@
 
 from typing import List
 
-from pytrevl.chart_parent_class import Chart
+from pytrevl.chart import Chart
 from pytrevl.cube import Cube
 from pytrevl.style import Style
 
