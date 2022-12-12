@@ -1,64 +1,58 @@
-'''
-Components module handling Charts and Chart-Visualization
-'''
+
+from typing import List
 
 from pytrevl.chart_parent_class import Chart
+from pytrevl.cube import Cube
+from pytrevl.style import Style
 
 class PieChart(Chart):
     '''
     PieChart component
     '''
-    def __init__(self, id: str, cube: str, title: str, measure: list, dimension: list, filters: dict = {}):
+    def __init__(self, id: str, cube: Cube, measure: str, dimension: str, filters: List, style: Style):
         self.id = id
-        self.title = title
         self.cube = cube
         self.measure = measure
         self.dimension = dimension
-        self.name = measure
         self.filters = filters
+        self.style = style
         self.type = "pie"
 
 class DonutChart(Chart):
     '''
     DonutChart component
     '''
-    def __init__(self, id: str, cube: str, title: str, innerSize: str, measure: list, dimension: list, filters: dict = {}):
+    def __init__(self, id: str, cube: Cube, measure: str, dimension: str, filters: List, style: Style):
         self.id = id
-        self.title = title
         self.cube = cube
         self.measure = measure
         self.dimension = dimension
-        self.name = measure
         self.filters = filters
-        self.size = "100%"
-        self.innerSize = innerSize
+        self.style = style
         self.type = "pie"
 
 class BarChart(Chart):
     '''
     BarChart component
     '''
-    def __init__(self, id: str, cube: str, title: str, measure: list, dimension: list, filters: dict = {}, orientation: str = "h"):
+    def __init__(self, id: str, cube: Cube, measure: str, dimension: str, filters: List, style: Style):
         self.id = id
-        self.title = title
         self.cube = cube
         self.measure = measure
         self.dimension = dimension
-        self.name = measure
         self.filters = filters
-        self.orientation = orientation
+        self.style = style
         self.type = "column"
 
 class LineChart(Chart):
     '''
     LineChart component
     '''
-    def __init__(self, id: str, cube: str, title: str, measure: list, dimension: list, filters: dict = {}):
+    def __init__(self, id: str, cube: Cube, measure: str, dimension: str, filters: List, style: Style):
         self.id = id
-        self.title = title
         self.cube = cube
         self.measure = measure
         self.dimension = dimension
-        self.name = measure
         self.filters = filters
+        self.style = style
         self.type = "line"
