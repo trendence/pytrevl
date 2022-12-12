@@ -28,6 +28,7 @@ MANIFEST
 .DS_Store
 pyproject.toml
 setup.py
+.vscode
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
