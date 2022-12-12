@@ -11,6 +11,7 @@ class X_Middle:
     '''
     def __init__(self, component: Component):
         self.component = component
+        self.http_auth = self.authenticate()
 
     def authenticate(self):
         x_username = os.getenv("X_MIDDLE_USERNAME")
@@ -18,10 +19,10 @@ class X_Middle:
         http_auth = requests.auth.HTTPBasicAuth(x_username, x_password)
         return http_auth
 
-    def post_request(self, yaml_object, http_auth):
+    def post_request(self, chart_json):
         base_url = os.getenv("X_MIDDLE_BASEURL")
-        req = {"abstractConfig": yaml_object,}
-        response = requests.post(f'{base_url}/dashboards', auth=http_auth, json=req)
+        req = {"abstractConfig": chart_json,}
+        response = requests.post(f'{base_url}/dashboards', auth=self.http_auth, json=req)
         
         if "error" in response.json():
             raise Exception("X-MIDDLE API ERROR RESPONSE: " + response.json()["error"] + "  REQUEST: " + str(req))
@@ -29,19 +30,16 @@ class X_Middle:
         return response
     
     def get_chart(self) -> dict:
-        # Authenticate with the X-Middle API
-        http_auth = self.authenticate()
-
         # Create a YAML object from the TREVL code
-        yaml_object = self.get_trevl()
+        chart_json = self.get_trevl()
 
         # Post a request to the X-Middle API and receive a response
-        x_middle_response = self.post_request(yaml_object=yaml_object, http_auth=http_auth)
+        x_middle_response = self.post_request(chart_json=chart_json)
         
         # Extract the JSON information from the response
-        self.highcharts_json = x_middle_response.json()["components"][0]
+        highcharts_json = x_middle_response.json()["components"][0]
 
-        return self.highcharts_json
+        return highcharts_json
 
     def get_trevl(self):
         travel_code_generator = TrevlCodeGenerator(self.component)
@@ -49,17 +47,8 @@ class X_Middle:
         return trevl_code
 
     def get_data(self):
-        # Authenticate with the X-Middle API
-        http_auth = self.authenticate()
-
-        # Create a YAML object from the TREVL code
-        yaml_object = self.get_trevl()
-
-        # Post a request to the X-Middle API and receive a response
-        x_middle_response = self.post_request(yaml_object=yaml_object, http_auth=http_auth)
-        
-        # Extract JSON information from post request response
-        self.highcharts_json = x_middle_response.json()["components"][0]
+        # Get Chart JSON from X-Middle
+        highcharts_json = self.get_chart()
 
         # Create lists for data and category names
         data = []
@@ -69,21 +58,23 @@ class X_Middle:
             '''
             If component type is 'pie' then x value will be called 'name' upon return from X-Middle
             '''
-            for data_points in self.highcharts_json["series"][0]["data"]:
+            for data_points in highcharts_json["series"][0]["data"]:
                 data.append([data_points["name"], data_points["y"]])
 
         elif self.component.type == "column":
             '''
             If component type is 'column' then x value is the names of options/catagories
             '''
-            category_names = self.highcharts_json["xAxis"]["categories"]
+            category_names = highcharts_json["xAxis"]["categories"]
 
-            for counter, value in enumerate(self.highcharts_json["series"][0]["data"]):
+            for counter, value in enumerate(highcharts_json["series"][0]["data"]):
                 data.append([category_names[counter],value[1]])
 
         elif self.component.type == "line":
-
-            for data_points in self.highcharts_json["series"][0]["data"]:
+            '''
+            If component type is 'line' then x value is 1st and y ist 2nd in list of data_points
+            '''
+            for data_points in highcharts_json["series"][0]["data"]:
                 data.append([data_points[0], data_points[1]])
 
         else:
