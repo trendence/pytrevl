@@ -1,13 +1,11 @@
-'''
-Trevl Code Generator
-'''
 from pytrevl.component import Component
+from typing import List
 
-class Trevl_Code_Generator:
+class TrevlCodeGenerator:
     def __init__(self, component: Component):
         self.component = component
 
-    def create_yaml(self) -> dict:
+    def get_trevl(self) -> dict:
         yaml = {
             'description': 'Placeholder',
             'parameters': [],
@@ -15,102 +13,43 @@ class Trevl_Code_Generator:
                 {
                     'id': self.component.id,
                     'type': 'chart',
-                    'queries': [{
-                        'measures': [self.component.cube + "." + self.component.measure],
-                        'dimensions': [self.component.cube + "." + self.component.dimension],
-                        'filters': []
-                        }],
-                    'display': {
-                        'chart': {'type': self.component.type},
-                        'title': {'text': self.component.title},
-                        'series': [{
-                            'name': "$" + self.component.cube + "." + self.component.dimension,
-                            
-                            'y': "$" + self.component.cube + "." + self.component.measure}
-                            ]}
-                }]}
-        for filter in self.component.filters:
-            yaml["components"][0]["queries"][0]["filters"].append({
-                'member': self.component.cube + "." + filter[0],
-                'operator': filter[1],
-                'values': [filter[2]]})
-
-        if hasattr(self.component, "innerSize"):
-          yaml['components'][0]['display']['series'][0]['size'] = self.component.size
-          yaml['components'][0]['display']['series'][0]['innerSize'] = self.component.innerSize
+                    'queries': self._create_queries(),
+                    'display': self._create_display()
+                }
+            ]
+        }
         return yaml
 
-'''
-    Deprecated function for creating TREVL code. 
+    def _create_queries(self) -> List[dict]:
+        queries = [{
+            'measures': [self.component.cube.name + "." + self.component.measure],
+            'dimensions': [self.component.cube.name + "." + self.component.dimension],
+            'filters': self._create_filters()
+        }]
+        return queries
 
-    def create_trevl(self) -> str:
-      if self.component.type == "pie":
-        trevl_code = f"""
-        description: >-
-          Placeholder
-        parameters: []
-        components:
-            - id: {self.component.id}
-              type: chart
-              queries:
-              - measures:
-                  - {self.component.cube}.{self.component.y}
-                dimensions:
-                  - {self.component.cube}.{self.component.x}"""
-        if self.component.filters:
-          trevl_code += """
-                filters:"""
-          for filter in self.component.filters:
-              trevl_code += f"""
-                - member: "{self.component.cube}.{filter[0]}"
-                  operator: "{filter[1]}"
-                  values:
-                    - "{filter[2]}" """
-        trevl_code += f"""
-              display:
-                chart:
-                  type: "{self.component.type}"
-                title:
-                  text: "{self.component.title}"
-                series:
-                  - name: ${self.component.cube}.{self.component.x}
-                    x: ${self.component.cube}.{self.component.x}
-                    y: ${self.component.cube}.{self.component.y}
-        """
+    def _create_filters(self) -> List[dict]:
+        filters = []
+        for filter in self.component.filters:
+            filters.append({
+                'member': self.component.cube.name + "." + filter.variable,
+                'operator': filter.operator,
+                'values': [filter.value]
+            })
+        return filters
 
-      else:
-        trevl_code = f"""
-        description: >-
-          Placeholder
-        parameters: []
-        components:
-            - id: {self.component.id}
-              type: chart
-              queries:
-              - measures:
-                  - {self.component.cube}.{self.component.x}
-                dimensions:
-                  - {self.component.cube}.{self.component.y}"""
-        if self.component.filters:
-          trevl_code += """
-                filters:"""
-          for filter in self.component.filters:
-              trevl_code += f"""
-                - member: "{self.component.cube}.{filter[0]}"
-                  operator: "{filter[1]}"
-                  values:
-                    - "{filter[2]}" """
-        trevl_code += f"""
-              display:
-                chart:
-                  type: "{self.component.type}"
-                title:
-                  text: "{self.component.title}"
-                series:
-                  - name: "{self.component.title}"
-                    x: ${self.component.cube}.{self.component.y}
-                    y: ${self.component.cube}.{self.component.x}
-        """
-      return trevl_code
+    def _create_display(self) -> dict:
+        display = {
+            'chart': {'type': self.component.type},
+            'title': {'text': self.component.style.title},
+            'series': [{
+                'name': "$" + self.component.cube.name + "." + self.component.dimension,
+                'x': "$" + self.component.cube.name + "." + self.component.dimension,
+                'y': "$" + self.component.cube.name + "." + self.component.measure
+            }]
+        }
+        if self.component.__class__ == "DonutChart":
+            display['series'][0]['size'] = self.component.style.size
+            display['series'][0]['innerSize'] = self.component.style.innerSize
 
-'''
+        return display
