@@ -48,8 +48,8 @@ class TrevlCodeGenerator:
                 'y': "$" + self.component.cube.name + "." + self.component.measure
             }]
         }
-        if self.component.__class__ == "DonutChart":
-            display['series'][0]['size'] = self.component.style.size
+        if self.component.__class__.__name__ == 'DonutChart':
+            del display['series'][0]['x']
             display['series'][0]['innerSize'] = self.component.style.innerSize
 
         return display
