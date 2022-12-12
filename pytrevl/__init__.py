@@ -17,5 +17,5 @@ from .style import Style
 
 # Version and Author
 
-__version__ = '0.0.2'
+__version__ = '0.1.1'
 __author__ = 'Trendence Institut'

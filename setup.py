@@ -2,16 +2,15 @@ from setuptools import setup
 
 setup(
     name='pytrevl',
-    version='0.0.2',    
+    version='0.1.1',    
     description='Python interface to handle and modify TREVL backed visualizations',
     url='https://github.com/trendence/pytrevl',
     author='Trendence Institut GmbH',
-    author_email='valentin.lorenzen@trendence.com',
+    author_email='pytrevl@trendence.com',
     license='MIT License',
     packages=['pytrevl', 'pytrevl.api'],
     install_requires=['numpy>=1.23.5'
-                      'pandas>=1.5',        
-                      'python-highcharts>=0.4.2',    
+                      'pandas>=1.5',          
                       'pyyaml>=6.0'              
                       ],
 
