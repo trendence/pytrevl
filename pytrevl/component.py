@@ -6,6 +6,3 @@ class Component(Protocol):
     '''
     def show(self) -> None:
         ...
-
-    def get_data(self) -> None:
-        ...
