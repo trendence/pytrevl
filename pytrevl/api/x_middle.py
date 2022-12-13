@@ -29,10 +29,12 @@ class X_Middle:
         
         return response
     
-    def get_chart(self) -> dict:
+    def get_chart(self, json: dict = None) -> dict:
         # Create a YAML object from the TREVL code
-        chart_json = self.get_trevl()
-
+        if not json:
+            chart_json = self.get_trevl()
+        else:
+            chart_json = json
         # Post a request to the X-Middle API and receive a response
         x_middle_response = self.post_request(chart_json=chart_json)
         
@@ -46,10 +48,14 @@ class X_Middle:
         trevl_code = travel_code_generator.get_trevl()
         return trevl_code
 
-    def get_data(self):
+    def get_data(self, json: dict = None):
         # Get Chart JSON from X-Middle
-        highcharts_json = self.get_chart()
-
+        if not json:
+            highcharts_json = self.get_chart()
+        else:
+            highcharts_json = self.get_chart(json)
+            self.component.type = json["components"][0]['display']['chart']['type']
+        
         # Create lists for data and category names
         data = []
         category_names = []
