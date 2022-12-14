@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='pytrevl',
-    version='0.2.0',    
+    version='0.2.1',    
     description='Python interface to handle and modify TREVL backed visualizations',
     url='https://github.com/trendence/pytrevl',
     author='Trendence Institut GmbH',
@@ -11,7 +11,7 @@ setup(
     packages=['pytrevl', 'pytrevl.api'],
     install_requires=['numpy>=1.23.5'
                       'pandas>=1.5',          
-                      'pyyaml>=6.0'
+                      'pyyaml>=6.0',
                       'requests>=2.0.0'              
                       ],
 
@@ -22,4 +22,4 @@ setup(
         'Operating System :: POSIX :: Linux',        
         'Programming Language :: Python :: 3.9',
     ],
-)
+)__
