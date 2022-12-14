@@ -12,7 +12,8 @@ setup(
     install_requires=['numpy>=1.23.5'
                       'pandas>=1.5',          
                       'pyyaml>=6.0',
-                      'requests>=2.0.0'              
+                      'requests>=2.0.0',
+                      'sqlalchemy>=1.0'
                       ],
 
     classifiers=[
