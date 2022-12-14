@@ -13,6 +13,7 @@ from .components import PieChart, BarChart, LineChart, DonutChart, CustomChart
 from .cube import Cube
 from .filter import Filter
 from .style import Style
+from .api.cube_query import CubeQuery
 
 
 # Version and Author
