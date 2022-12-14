@@ -22,4 +22,4 @@ setup(
         'Operating System :: POSIX :: Linux',        
         'Programming Language :: Python :: 3.9',
     ],
-)__
+)
