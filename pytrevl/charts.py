@@ -2,8 +2,9 @@ from dataclasses import dataclass, field
 from typing import Optional,TYPE_CHECKING
 from uuid import uuid4
 
-from .utils import insert, merge, AsSomethingMixin
 from .api import xmiddle
+from .notebook import chart_iframe
+from .utils import insert, merge, AsSomethingMixin
 
 if TYPE_CHECKING:
     from .api import XMiddleService
@@ -105,13 +106,17 @@ class BaseChart(AsSomethingMixin, metaclass=_MergeWithBase):
 
         queries = [self.query.serialize()]
         return {
+            'type': 'chart',
             'id': self.id,
             'display': display,
             'queries': queries,
         }
 
     def show(self, *args, **kwargs):
-        return Dashboard(components=[self]).show()
+        return Dashboard(components=[self]).show(*args, **kwargs)
+
+    def render(self, *args, **kwargs):
+        return Dashboard(components=[self]).render(*args, **kwargs)
 
 
 class ColumnChart(BaseChart):
@@ -168,7 +173,9 @@ class Dashboard(AsSomethingMixin):
     components: list = field(default_factory=list)
 
     def serialize(self):
-        data = {}
+        data = {
+            'parameters': [],
+        }
         # Add description before components to have them at the top of the
         # serialized object.
         if self.description:
@@ -199,11 +206,15 @@ class Dashboard(AsSomethingMixin):
             return self
         return NotImplemented
 
-    def show(self, api_client: 'XMiddleService'=None, **kwargs):
+    def render(self, api_client: 'XMiddleService'=None, **kwargs):
         if api_client is None:
             api_client = xmiddle()
 
-        body = api_client(self.serialize(), **kwargs)
-        return body
-        # TODO
-        # return [IpythonHC(chart) for chart in body['components']]
+        return api_client(self, **kwargs)
+
+    def show(self, *args, **kwargs):
+        from IPython.display import HTML
+        body = self.render(*args, **kwargs)
+
+        iframes = [chart_iframe(comp) for comp in body['components']]
+        return HTML('\n'.join(iframes))

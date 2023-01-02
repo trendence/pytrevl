@@ -66,15 +66,15 @@ class XMiddleService:
     def status(self):
         return self._session.get(url_join(self.api_root, 'status')).json()
 
-    def __call__(self, dashboard: "Dashboard", event=None, parameters=None) -> dict:
+    def __call__(self, dashboard: "Dashboard", event=None, state=None) -> dict:
         """Render a dashboard through the API."""
         body = {
-            'abstractDashoboardConfig': dashboard.serialize(),
+            'abstractConfig': dashboard.serialize(),
         }
         if event:
             body['event'] = event
-        if parameters:
-            body['parameters'] = parameters
+        if state:
+            body['state'] = state
         resp = self._session.post(self.api_root, json=body)
         resp.raise_for_status()
         return resp.json()
