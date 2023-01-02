@@ -115,14 +115,28 @@ class MergeWithBase(type):
             cls.default = merge(cls.default, getattr(c, '_default', {}))
 
 
+@dataclass
+class CubeFilter:
+    # The column name without the cube name
+    member: str
+    operator: str
+    values: Optional[list[str]] = None
+    parameter: Optional[str] = None
+
+    # TODO
+
 
 @dataclass
 class CubeQuery:
     cube: str
-    measures: list[str]
+    measures: list[str] = field(default_factory=list)
     dimensions: list[str] = field(default_factory=list)
     filters: list = field(default_factory=list)
     computed: list = field(default_factory=list)
+
+    def __post_init__(self):
+        if not self.measures and not self.dimensions:
+            raise ValueError('CubeQuery must have at at least one measure or one dimension!')
 
     def __getitem__(self, field):
         """Get a reference for `field` in this query."""
@@ -149,12 +163,13 @@ class CubeQuery:
         return ret
 
     def serialize(self):
-        ret = {
-            'measures': self._prepend_cube(self.measures),
-        }
+        ret = {}
+
+        if self.measures:
+            ret['measures'] = self._prepend_cube(self.measures)
 
         if self.dimensions:
-            ret['dimensions'] = self._prepend_cube(self.measures)
+            ret['dimensions'] = self._prepend_cube(self.dimensions)
 
         if self.filters:
             ret['filters'] = [self._serialize_filter(f) for f in self.filters]
@@ -164,73 +179,13 @@ class CubeQuery:
         return ret
 
 
-query = CubeQuery('cubeName', ['meas1', 'meas2'], ['dim1', 'dim2'])
+query = CubeQuery('cubeName', ['meas1', 'meas2'], ['dim1', 'dim2'],
+                  filters=[
+                      CubeFilter('foo', 'equals', ['1', '2']),
+                   ],
+                  )
 
 
-_xmiddle = None
-
-def xmiddle(*args, **kwargs):
-    if not _xmiddle:
-        _xmiddle = XMiddleService.from_env(*args, **kwargs)
-    return _xmiddle
-
-
-class XMiddleService:
-    """Simple wrapper for x-middle API endpoints.
-
-    Examples
-    --------
-    >>> # Load configuration from environment
-    >>> api = XMiddleService.from_env()
-    >>> dashboard = # ...
-    >>> # Call API with a dashboard ("rendering")
-    >>> api(dashboard)
-    {
-        components: [ ... ],
-        events: [ ... ],
-        parameters: { ... },
-    }
-    """
-    def __init__(self, base_url: str, auth_password: Optional[str]=None, auth_username: str="pytrevl"):
-        """
-        Use :method:`~XMiddleService.from_env` to create an instance using
-        configuration from environment variables.
-
-        Parameters
-        ----------
-        base_url
-            The URL of the base of dashboard-API endpoint, i.e. without the
-            final ``'dashboards'``.
-        auth_password
-            The password for HTTP-Basic auth for the API.
-        auth_username
-            The username for HTTP-Basic auth for the API.
-        """
-        self.root = url_join(base_url, 'dashboards')
-        if auth_password:
-            self._session = requests.Session(
-                auth=requests.auth.HTTPBasicAuth(auth_username, auth_password)
-            )
-        else:
-            self._session = requests.Session()
-
-    @classmethod
-    def from_env(cls, base_url: str="X_MIDDLE_BASEURL", auth_password: str="X_MIDDLE_PASSWORD", **kwargs):
-        base_url = environ[base_url]
-        auth_password = environ[auth_password]
-        return cls(base_url, auth_password, **kwargs)
-
-    def __call__(self, dashboard: "Dashboard", event=None, parameters=None) -> dict:
-        """Render a dashboard through the API."""
-        body = {
-            'abstractDashoboardConfig': dashboard.serialize(),
-        }
-        if event:
-            body['event'] = event
-        if parameters:
-            body['parameters'] = parameters
-        resp = self._session.post(self.root_url, json=body)
-        return resp.json()
 
 
 class AsSomethingMixin:
@@ -317,7 +272,7 @@ class Dashboard(AsSomethingMixin):
         if isinstance(other, Dashboard):
             return Dashboard(self.description, other.components + self.components)
         elif isinstance(other, BaseChart):
-            return Dashboard(self.description, [other] + self.components + [other])
+            return Dashboard(self.description, [other] + self.components)
 
     def __iadd__(self, other):
         if isinstance(other, Dashboard):
@@ -419,8 +374,33 @@ class BaseChart(AsSomethingMixin, metaclass=MergeWithBase):
     def show(self, *args, **kwargs):
         return Dashboard(components=[self]).show()
 
-
 print(BaseChart(query, id='base-01').serialize())
+
+class ColumnChart(BaseChart):
+    _default = {
+        'chart': {
+            'type': 'column',
+        },
+    }
+    _kw_paths = {
+        'category': 'series.0.x',
+        'height': 'series.0.y',
+        }
+    def __init__(self, query, category=None, height=None, **kwargs):
+        if category is None:
+            category = query[query.dimensions[0]]
+        if height is None:
+            height = query[query.measures[0]]
+
+        super().__init__(
+            **self._filter_locals(locals()),
+            **kwargs,
+        )
+
+
+print(ColumnChart(query).as_yaml())
+1/0
+
 
 class PieChart(BaseChart):
     _default = {
