@@ -50,11 +50,10 @@ class XMiddleService:
         auth_username
             The username for HTTP-Basic auth for the API.
         """
-        self.root = url_join(base_url, 'dashboards')
+        self.api_root = url_join(base_url, 'dashboards')
+        self._session = requests.Session()
         if auth_password:
-            self._session = requests.Session(
-                auth=requests.auth.HTTPBasicAuth(auth_username, auth_password)
-            )
+            self._session.auth = requests.auth.HTTPBasicAuth(auth_username, auth_password)
         else:
             self._session = requests.Session()
 
@@ -63,6 +62,9 @@ class XMiddleService:
         base_url = environ[base_url]
         auth_password = environ[auth_password]
         return cls(base_url, auth_password, **kwargs)
+
+    def status(self):
+        return self._session.get(url_join(self.api_root, 'status')).json()
 
     def __call__(self, dashboard: "Dashboard", event=None, parameters=None) -> dict:
         """Render a dashboard through the API."""
@@ -73,6 +75,6 @@ class XMiddleService:
             body['event'] = event
         if parameters:
             body['parameters'] = parameters
-        resp = self._session.post(self.root_url, json=body)
+        resp = self._session.post(self.api_root, json=body)
         resp.raise_for_status()
         return resp.json()
