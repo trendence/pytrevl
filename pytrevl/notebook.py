@@ -1,9 +1,9 @@
+"""Display a single Highcharts chart in an IFrame."""
 import html
 import json
 
-class IpythonHC:
-    # template for the IFrame
-    iframe_template = """
+# Default template for the IFrame source
+_default_template = """
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -18,30 +18,24 @@ class IpythonHC:
   <body style="margin:0;padding:0">
     <div id="container" style="">Loading....</div>
     <script>
-    console.log('A');
       $(function(){{
         console.log('AA');
         Highcharts.setOptions({{ "global": {{}}, "lang": {{}}, }});
         var options = {options};
         var chart = new Highcharts.Chart('container', options);
-        console.log('B'); 
+
       }});
-    console.log('BB');
     </script>
   </body>
 </html>
-    """
-    def __init__(self, options):
-        self.options = options
-        
-    @property
-    def iframe(self):
-        return self.iframe_template.format(options=json.dumps(self.options))
-        
-    def _repr_html_(self):
-        src_doc = html.escape(self.iframe).replace('\n', ' ')
-        return ''.join((
-            "<p><p>",
-            f"""<iframe width=800 height=400 srcdoc="{src_doc}"></iframe>""",
-            "<p><p>",
-        ))
+"""
+
+def chart_iframe(chart_options, width=800, height=400, template=None):
+    """Build IFrame from Highcharts chart options."""
+    if template is None:
+        template = _default_template
+
+    page_src = template.format(options=json.dumps(chart_options))
+    # We need to HTML-escape the source document
+    src_doc = html.escape(page_src).replace('\n', ' ')
+    return f"""<iframe width={width} height={height} srcdoc="{src_doc}"></iframe>"""
