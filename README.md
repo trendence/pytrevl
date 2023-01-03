@@ -28,3 +28,11 @@ feel free to play around with pyTREVL. In case of questions or Feedback, open a 
 ### How do I plug in my own Cube endpoint?
 
 You just have to set some ENV variables. Details coming Soon 🤗 🚧
+
+### Local development
+
+You can install the package frlocally by cd'ing into the repository directory and running
+
+```
+pip install -e .
+```
