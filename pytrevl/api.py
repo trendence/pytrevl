@@ -64,7 +64,10 @@ class XMiddleService:
         return cls(base_url, auth_password, **kwargs)
 
     def status(self):
-        return self._session.get(url_join(self.api_root, 'status')).json()
+        try:
+            return self._session.get(url_join(self.api_root, 'status')).json()
+        except ValueError:
+            raise Exception("Empty response body. Have you provided the correct authentication username and/or password?")
 
     def __call__(self, dashboard: "Dashboard", event=None, state=None) -> dict:
         """Render a dashboard through the API."""
