@@ -22,7 +22,7 @@ class Computed:
     """Container for computed field in TREVL queries."""
     name: str
     code: str
-    arguments: Optional[dict[str, str]]
+    arguments: Optional[dict[str, str]] = field(default_factory=dict)
 
 
 
@@ -67,9 +67,12 @@ class CubeQuery:
         """Get a reference for `field` in this query."""
         if field in self.measures or field in self.dimensions:
             return f"${self.cube}.{field}"
-        if field in {c['name'] for c in self.computed}:
+        if field in {c.name for c in self.computed}:
             return f'${field}'
-        raise ValueError(f'Field {field!r} not found in query for cube {self.cube}')
+        raise KeyError(
+            f'Field {field!r} not found in query for cube {self.cube}. Available fields: '
+            ', '.join(sorted((*self.measures, *self.dimensions, *(c.name for c in self.computed))))
+            )
 
     def _prepend_cube(self, fields: list[str]) -> list[str]:
         return [f'{self.cube}.{f}' for f in fields]
