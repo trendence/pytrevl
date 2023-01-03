@@ -19,6 +19,7 @@ def simple_chart(query):
 def expected():
     return {
         'id': 'id-simple',
+        'type': 'chart',
         'display': {
             'chart': {
                 'type': 'line',
@@ -56,6 +57,7 @@ def test_yaml_serialization(simple_chart, expected):
     buf.seek(0)
     assert yaml.safe_load(stream=buf) == expected
 
+
 def test_component_arithmetics(simple_chart, expected):
     assert type(simple_chart + simple_chart) == Dashboard
     assert type(Dashboard() + simple_chart) == Dashboard
@@ -90,6 +92,7 @@ def test_subclass_merging(query):
     sub = TestSub(query, id='id-sub', x=query['measure'], y=query['measure'], title='chart title')
     expected = {
         'id': 'id-sub',
+        'type': 'chart',
         'display': {
             'chart': {
                 'new': 'value',
@@ -116,3 +119,14 @@ def test_subclass_merging(query):
     }
 
     assert sub.serialize() == expected
+
+
+def test_custom_settings(query):
+    c = BaseChart(query)
+
+    c['foo.bar'] = 'baz'
+    test = c.serialize()
+
+    assert 'baz' == test['display']['foo']['bar']
+
+

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Optional,TYPE_CHECKING
+from typing import Literal, Optional,TYPE_CHECKING, Union
 from uuid import uuid4
 
 from .api import xmiddle
@@ -84,7 +84,7 @@ class BaseChart(AsSomethingMixin, metaclass=_MergeWithBase):
         return NotImplemented
 
     def __setitem__(self, path, value):
-        self.custom = insert(path, value)
+        self.custom = insert(value, path, self.custom)
 
     def _filter_locals(self, l, filtered=None):
         filtered = filtered or {'kwargs', 'self', '__class__'}
@@ -117,6 +117,58 @@ class BaseChart(AsSomethingMixin, metaclass=_MergeWithBase):
 
     def render(self, *args, **kwargs):
         return Dashboard(components=[self]).render(*args, **kwargs)
+
+
+
+class LineChart(BaseChart):
+    """Simple line chart
+
+
+    See :class:`BaseChart` for additional accepted arguments.
+
+    Parameters
+    ----------
+    query
+        The cube query.
+    x
+        The query field for the x-values. If missing or ``None``, the first 
+        measure in ``query`` is used.
+    y
+        The query field for the y-values. Ifmissing or ``None``, the first
+        dimension in ``query`` is used.
+    order_by
+        The data axis to sort the data by. Defaults to the x-axis.
+    order_direction
+        The direction how to sort the data. Defaults to ascending order.
+    """
+    _default: dict = {
+        'chart': {
+            'type': 'line',
+        },
+    }
+    _kw_paths = {
+        'order_by': 'series.0.order.0.field',
+        'order_direction': 'series.0.order.0.order',
+    }
+
+    def __init__(
+        self,
+        query: 'CubeQuery',
+        x: Optional[str]=None,
+        y: Optional[str]=None,
+        order_by: str='x',
+        order_direction: Union[Literal['asc'], Literal['desc']]='asc',
+        **kwargs,
+    ):
+        if x is None:
+            x = query[query.dimensions[0]]
+        if y is None:
+            y = query[query.measures[0]]
+
+        super().__init__(
+            **self._filter_locals(locals()),
+            **kwargs,
+        )
 
 
 class ColumnChart(BaseChart):
