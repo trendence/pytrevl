@@ -119,3 +119,14 @@ def test_subclass_merging(query):
     }
 
     assert sub.serialize() == expected
+
+
+def test_custom_settings(query):
+    c = BaseChart(query)
+
+    c['foo.bar'] = 'baz'
+    test = c.serialize()
+
+    assert 'baz' == test['display']['foo']['bar']
+
+

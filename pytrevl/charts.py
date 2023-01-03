@@ -84,7 +84,7 @@ class BaseChart(AsSomethingMixin, metaclass=_MergeWithBase):
         return NotImplemented
 
     def __setitem__(self, path, value):
-        self.custom = insert(path, value)
+        self.custom = insert(value, path, self.custom)
 
     def _filter_locals(self, l, filtered=None):
         filtered = filtered or {'kwargs', 'self', '__class__'}
