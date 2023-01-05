@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  jupyter:
+    image: jupyter/scipy-notebook:2023-01-04
+    volumes:
+      - "../:/home/jovyan/work/"
+      - "./jupyter-setup.sh:/usr/local/bin/before-notebook.d/jupyter-setup.sh:ro"
+    ports:
+      - "${PYTREVL_LAB_PORT:-8888}:8888"
+    command: "start.sh jupyter lab  --IdentityProvider.token=''"
+    environment:
+      # Make pytrevl package available for imports
+      - "PYTHONPATH=/home/jovyan/work"
+    env_file:
+      - ../.env

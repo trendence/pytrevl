@@ -8,7 +8,7 @@ setup(
     author='Trendence Institut GmbH',
     author_email='pytrevl@trendence.com',
     license='MIT License',
-    packages=['pytrevl', 'pytrevl.api'],
+    packages=['pytrevl'],
     install_requires=['numpy>=1.23.5'
                       'pandas>=1.5',          
                       'pyyaml>=6.0',
