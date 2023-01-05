@@ -29,6 +29,23 @@ feel free to play around with pyTREVL. In case of questions or Feedback, open a 
 
 You just have to set some ENV variables. Details coming Soon 🤗 🚧
 
+### Containerized development
+
+You can use a locally running, containerized Jupyter Lab using your local
+`pytrevl` code like so:
+1. (Only once) Create `.env` environment file with
+   ```
+   X_MIDDLE_BASEURL=...
+   X_MIDDLE_PASSWORD=...
+   ```
+2. Start the notebook: `docker-compose --file contrib/docker-compose.yml up
+   -d`.
+
+   _NOTE:_ You can use `PYTREVL_LAB_PORT=3999 docker-compose ...` to change
+   the port.
+3. Open http://localhost:8888 in a browser. (Use a different port of you
+   changed it.)
+
 ### Local development
 
 You can install the package frlocally by cd'ing into the repository directory and running
