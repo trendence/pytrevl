@@ -196,6 +196,42 @@ class ColumnChart(BaseChart):
         )
 
 
+class BarChart(BaseChart):
+    _default = {
+        "chart": {
+            "type": "bar",
+        },
+    }
+
+    _kw_paths = {
+        "category": "series.0.data.x",
+        "width": "series.0.data.y",
+    }
+
+    def __init__(self, query, category=None, width=None, **kwargs):
+        if category is None:
+            category = query[query.dimensions[0]]
+        if width is None:
+            width = query[query.measures[0]]
+
+        super().__init__(
+            **self._filter_locals(locals()),
+            **kwargs,
+        )
+
+
+class StackedBarChart(BarChart):
+    _kw_paths = {
+        "stacking": "plotOptions.series.stacking",
+        "category": "series.0.name",
+    }
+    def __init__(self, query, stacking="normal", **kwargs):
+        super().__init__(
+            **self._filter_locals(locals()),
+            **kwargs,
+        )
+
+
 class PieChart(BaseChart):
     _default = {
         'chart': {
