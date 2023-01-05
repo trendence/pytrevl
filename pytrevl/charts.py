@@ -140,7 +140,7 @@ class LineChart(BaseChart):
         The query field for the y-values. Ifmissing or ``None``, the first
         dimension in ``query`` is used.
     order_by
-        The data axis to sort the data by. Defaults to the x-axis.
+        The query column to sort the data by. Defaults to the x-axis.
     order_direction
         The direction how to sort the data. Defaults to ascending order.
     """
@@ -150,7 +150,7 @@ class LineChart(BaseChart):
         },
     }
     _kw_paths = {
-        'order_by': 'series.0.order.0.field',
+        'order_by': 'series.0.order.0.column',
         'order_direction': 'series.0.order.0.order',
     }
 
@@ -159,7 +159,7 @@ class LineChart(BaseChart):
         query: 'CubeQuery',
         x: Optional[str]=None,
         y: Optional[str]=None,
-        order_by: str='x',
+        order_by: Optional[str]=None,
         order_direction: Union[Literal['asc'], Literal['desc']]='asc',
         **kwargs,
     ):
@@ -167,6 +167,8 @@ class LineChart(BaseChart):
             x = query[query.dimensions[0]]
         if y is None:
             y = query[query.measures[0]]
+        if order_by is None:
+            order_by = x
 
         super().__init__(
             **self._filter_locals(locals()),
