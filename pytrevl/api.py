@@ -1,4 +1,5 @@
 """Wrapper around x-middle API."""
+from json import dumps
 from os import environ
 from posixpath import join as url_join
 from typing import Optional, TYPE_CHECKING
@@ -18,6 +19,14 @@ def xmiddle(*args, **kwargs):
         _xmiddle = XMiddleService.from_env(*args, **kwargs)
     return _xmiddle
 
+class RenderError(Exception):
+    def __init__(self, parent_error):
+        try:
+            super().__init__(f'Rendering failed ({parent_error.request.url}):\n{dumps(parent_error.response.json(), indent=2)}')
+        except:
+            super().__init__(str(parent_error))
+        self.parent_error = parent_error
+
 
 class XMiddleService:
     """Simple wrapper for x-middle API endpoints.
@@ -35,6 +44,10 @@ class XMiddleService:
         parameters: { ... },
     }
     """
+
+    # The schemaVersion used when requesting x-middle API.
+    schema_version: str = "v2"
+
     def __init__(self, base_url: str, auth_password: Optional[str]=None, auth_username: str="pytrevl"):
         """
         Use :method:`~XMiddleService.from_env` to create an instance using
@@ -72,6 +85,7 @@ class XMiddleService:
     def __call__(self, dashboard: "Dashboard", event=None, state=None) -> dict:
         """Render a dashboard through the API."""
         body = {
+            'schemaVersion': self.schema_version,
             'abstractConfig': dashboard.serialize(),
         }
         if event:
@@ -79,5 +93,8 @@ class XMiddleService:
         if state:
             body['state'] = state
         resp = self._session.post(self.api_root, json=body)
-        resp.raise_for_status()
+        try:
+            resp.raise_for_status()
+        except requests.HTTPError as e:
+            raise RenderError(e)
         return resp.json()

@@ -62,11 +62,14 @@ class BaseChart(AsSomethingMixin, metaclass=_MergeWithBase):
     _kw_paths: dict[str, str] = {
         'title': 'title.text',
         # Series definition
-        'color': 'series.0.color',
         'name': 'series.0.name',
-        'x': 'series.0.x',
-        'y': 'series.0.y',
-        'z': 'series.0.z',
+        'stack': 'series.0.stack',
+        # Series data point definition
+        'color': 'series.0.data.color',
+        'pointName': 'series.0.data.name',
+        'x': 'series.0.data.x',
+        'y': 'series.0.data.y',
+        'z': 'series.0.data.z',
     }
 
     def __init__(self, query: 'CubeQuery', id: Optional[str]=None, **kwargs):
@@ -178,8 +181,8 @@ class ColumnChart(BaseChart):
         },
     }
     _kw_paths = {
-        'category': 'series.0.x',
-        'height': 'series.0.y',
+        'category': 'series.0.data.x',
+        'height': 'series.0.data.y',
         }
     def __init__(self, query, category=None, height=None, **kwargs):
         if category is None:
@@ -187,6 +190,42 @@ class ColumnChart(BaseChart):
         if height is None:
             height = query[query.measures[0]]
 
+        super().__init__(
+            **self._filter_locals(locals()),
+            **kwargs,
+        )
+
+
+class BarChart(BaseChart):
+    _default = {
+        "chart": {
+            "type": "bar",
+        },
+    }
+
+    _kw_paths = {
+        "category": "series.0.data.x",
+        "width": "series.0.data.y",
+    }
+
+    def __init__(self, query, category=None, width=None, **kwargs):
+        if category is None:
+            category = query[query.dimensions[0]]
+        if width is None:
+            width = query[query.measures[0]]
+
+        super().__init__(
+            **self._filter_locals(locals()),
+            **kwargs,
+        )
+
+
+class StackedBarChart(BarChart):
+    _kw_paths = {
+        "stacking": "plotOptions.series.stacking",
+        "category": "series.0.name",
+    }
+    def __init__(self, query, stacking="normal", **kwargs):
         super().__init__(
             **self._filter_locals(locals()),
             **kwargs,
@@ -225,9 +264,7 @@ class Dashboard(AsSomethingMixin):
     components: list = field(default_factory=list)
 
     def serialize(self):
-        data = {
-            'parameters': [],
-        }
+        data = {}
         # Add description before components to have them at the top of the
         # serialized object.
         if self.description:
