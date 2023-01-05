@@ -35,6 +35,10 @@ class XMiddleService:
         parameters: { ... },
     }
     """
+
+    # The schemaVersion used when requesting x-middle API.
+    schema_version: str = "v2"
+
     def __init__(self, base_url: str, auth_password: Optional[str]=None, auth_username: str="pytrevl"):
         """
         Use :method:`~XMiddleService.from_env` to create an instance using
@@ -72,6 +76,7 @@ class XMiddleService:
     def __call__(self, dashboard: "Dashboard", event=None, state=None) -> dict:
         """Render a dashboard through the API."""
         body = {
+            'schemaVersion': self.schema_version,
             'abstractConfig': dashboard.serialize(),
         }
         if event:
