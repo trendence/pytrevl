@@ -18,5 +18,6 @@ from .charts import (
     DonutChart,
     LineChart,
     PieChart,
+    BarChart
 )
 from .cube import CubeQuery, Computed, Filter

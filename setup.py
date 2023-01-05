@@ -14,6 +14,7 @@ setup(
                       'pyyaml>=6.0',
                       'requests>=2.0.0',
                       'sqlalchemy>=1.0'
+                      'cube_js_client'
                       ],
 
     classifiers=[

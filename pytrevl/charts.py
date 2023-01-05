@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Literal, Optional,TYPE_CHECKING, Union
 from uuid import uuid4
+import pandas as pd
 
 from .api import xmiddle
 from .notebook import chart_iframe
@@ -9,6 +10,20 @@ from .utils import insert, merge, AsSomethingMixin
 if TYPE_CHECKING:
     from .api import XMiddleService
     from .cube import CubeQuery
+
+def extract_dataframe(series, rendered_chart):
+    df = pd.DataFrame.from_records(series["data"])
+    if "name" in series:
+        df["series_name"] = series["name"]
+    if "stack" in series:
+        df["stack"] = series["stack"]
+    if "xAxis" in rendered_chart:
+        m = dict(enumerate(rendered_chart["xAxis"]["categories"]))
+        df["x"] = df["x"].map(m)
+    if "yAxis" in rendered_chart:
+        m = dict(enumerate(rendered_chart["yAxis"]["categories"]))
+        df["y"] = df["y"].map(m)
+    return df
 
 class _MergeWithBase(type):
     """Helper to merge ``_kw_paths`` and ``_default`` of all parent classes
@@ -119,7 +134,13 @@ class BaseChart(AsSomethingMixin, metaclass=_MergeWithBase):
         return Dashboard(components=[self]).show(*args, **kwargs)
 
     def render(self, *args, **kwargs):
-        return Dashboard(components=[self]).render(*args, **kwargs)
+        resp = Dashboard(components=[self]).render(*args, **kwargs)
+        return resp["components"][0]
+
+    def get_data(self, *args, **kwargs):
+        resp = self.render(*args, **kwargs)
+        dfs = [extract_dataframe(series, resp) for series in resp["series"]]
+        return pd.concat(dfs, ignore_index=True)
 
 
 

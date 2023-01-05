@@ -2,6 +2,9 @@
 from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Optional
+import pandas as pd
+
+from .api import cube
 
 @dataclass
 class Filter:
@@ -101,7 +104,7 @@ class CubeQuery:
                 }
         return ret
 
-    def serialize(self) -> dict:
+    def serialize(self, include_computed = True) -> dict:
         ret = {}
 
         if self.measures:
@@ -113,6 +116,12 @@ class CubeQuery:
         if self.filters:
             ret['filters'] = [self._serialize_filter(f) for f in self.filters]
 
-        if self.computed:
+        if include_computed and self.computed:
             ret['computed'] = [self._serialize_computed(c) for c in self.computed]
         return ret
+
+    def get_data(self, client=None):
+        if client is None:
+            client = cube()
+        resp = client.load(self.serialize(include_computed=False))
+        return pd.DataFrame.from_records(resp)
