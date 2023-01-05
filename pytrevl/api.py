@@ -3,6 +3,7 @@ from json import dumps
 from os import environ
 from posixpath import join as url_join
 from typing import Optional, TYPE_CHECKING
+from cube_js_client import CubeJsClient
 
 import requests
 
@@ -11,7 +12,13 @@ if TYPE_CHECKING:
 
 
 _xmiddle = None
+_cube = None
 
+def cube(server: str="CUBE_SERVER", secret: str="CUBE_SECRET"):
+    global _cube
+    if not _cube:
+        _cube = CubeJsClient(server=environ[server], secret=environ[secret])
+    return _cube
 
 def xmiddle(*args, **kwargs):
     global _xmiddle
@@ -26,7 +33,6 @@ class RenderError(Exception):
         except:
             super().__init__(str(parent_error))
         self.parent_error = parent_error
-
 
 class XMiddleService:
     """Simple wrapper for x-middle API endpoints.
