@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import Literal, Optional,TYPE_CHECKING, Union
 from uuid import uuid4
 import pandas as pd
+import yaml
 
 from .api import xmiddle
 from .notebook import chart_iframe
@@ -280,6 +281,15 @@ class DonutChart(PieChart):
             **kwargs,
         )
 
+class CustomChart (BaseChart):
+    def __init__(self, trevl_code):
+        if isinstance(trevl_code, dict):
+            self.trevl_code = trevl_code
+        elif isinstance(trevl_code, str):
+            self.trevl_code = yaml.safe_load(trevl_code)
+    
+    def serialize(self):
+        return self.trevl_code
 
 @dataclass
 class Dashboard(AsSomethingMixin):
