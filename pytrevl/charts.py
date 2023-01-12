@@ -281,7 +281,7 @@ class DonutChart(PieChart):
             **kwargs,
         )
 
-class CustomChart (BaseChart):
+class CustomChart(BaseChart):
     def __init__(self, trevl_code):
         self.id = trevl_code['id']
         if isinstance(trevl_code, dict):
