@@ -282,13 +282,11 @@ class DonutChart(PieChart):
         )
 
 class CustomChart(BaseChart):
-    def __init__(self, trevl_code):
+    def __init__(self, trevl_code: dict, **kwargs):
         self.id = trevl_code['id']
-        if isinstance(trevl_code, dict):
-            self.trevl_code = trevl_code
-        elif isinstance(trevl_code, str):
-            self.trevl_code = yaml.safe_load(trevl_code)
-    
+        self.trevl_code = trevl_code
+        self.custom = {}
+   
     def serialize(self):
         display = merge(
             self.trevl_code['display'],
@@ -298,6 +296,10 @@ class CustomChart(BaseChart):
             **self.trevl_code,
             'display': display,
         }
+    
+    @classmethod
+    def from_yaml(cls, code: str):
+        return cls(yaml.safe_load(code))
 
 @dataclass
 class Dashboard(AsSomethingMixin):
