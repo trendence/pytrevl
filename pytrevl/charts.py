@@ -283,6 +283,7 @@ class DonutChart(PieChart):
 
 class CustomChart (BaseChart):
     def __init__(self, trevl_code):
+        self.id = trevl_code['id']
         if isinstance(trevl_code, dict):
             self.trevl_code = trevl_code
         elif isinstance(trevl_code, str):
