@@ -290,7 +290,14 @@ class CustomChart(BaseChart):
             self.trevl_code = yaml.safe_load(trevl_code)
     
     def serialize(self):
-        return self.trevl_code
+        display = merge(
+            self.trevl_code['display'],
+            self.custom,
+        )
+        return {
+            **self.trevl_code,
+            'display': display,
+        }
 
 @dataclass
 class Dashboard(AsSomethingMixin):
