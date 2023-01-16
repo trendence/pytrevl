@@ -7,6 +7,12 @@ from typing import Optional, Union
 import yaml
 
 
+class NoAliasDumper(yaml.SafeDumper):
+    """Stop PyYAML from using anchors and aliases during dump operation.
+    """
+    def ignore_aliases(self, data):
+        return True
+
 def merge(a, b):
     """Recursively merge 2 data structures.
 
@@ -146,6 +152,6 @@ class AsSomethingMixin:
         """
         data = self.serialize()
         if buf:
-            yaml.safe_dump(data, stream=buf, **dump_kw)
+            yaml.dump(data, Dumper=NoAliasDumper, stream=buf, **dump_kw)
             return buf
-        return yaml.safe_dump(data, **dump_kw)
+        return yaml.dump(data, Dumper=NoAliasDumper, **dump_kw)
