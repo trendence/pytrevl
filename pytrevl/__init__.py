@@ -14,7 +14,6 @@ __author__ = 'Trendence Institut'
 
 from .charts import (
     ColumnChart,
-    Dashboard,
     DonutChart,
     LineChart,
     PieChart,
@@ -22,4 +21,8 @@ from .charts import (
     StackedBarChart,
     CustomChart
 )
+from .components import (
+    ScoreComponent,
+)
 from .cube import CubeQuery, Computed, Filter
+from .dashboard import Dashboard

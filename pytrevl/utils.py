@@ -13,6 +13,7 @@ class NoAliasDumper(yaml.SafeDumper):
     def ignore_aliases(self, data):
         return True
 
+
 def merge(a, b):
     """Recursively merge 2 data structures.
 
@@ -155,3 +156,21 @@ class AsSomethingMixin:
             yaml.dump(data, Dumper=NoAliasDumper, stream=buf, **dump_kw)
             return buf
         return yaml.dump(data, Dumper=NoAliasDumper, **dump_kw)
+
+
+class MergeWithBase(type):
+    """Helper to merge ``_kw_paths`` and ``_default`` of all parent classes
+    into ``kw_paths`` and ``default``, respectively.
+    """
+    def __init__(cls, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Merge the kw_paths mapping
+        cls.kw_paths = {}
+        for c in reversed(cls.mro()):
+            cls.kw_paths.update(getattr(c, '_kw_paths', {}))
+
+        # Merge the default config
+        cls.default = {}
+        for c in reversed(cls.mro()):
+            cls.default = merge(cls.default, getattr(c, '_default', {}))
