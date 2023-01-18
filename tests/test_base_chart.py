@@ -23,19 +23,21 @@ def expected():
         'display': {
             'chart': {
                 'type': 'line',
-                },
+            },
             'title': {
                 'text': 'chart title',
-                },
-            'series': [{
-                'x': '$cube.measure',
-                'y': '$cube.measure',
-                }],
             },
+            'series': [{
+                'data': {
+                    'x': '$cube.measure',
+                    'y': '$cube.measure',
+                },
+            }],
+        },
         'queries': [{
             'measures': ['cube.measure'],
-            }],
-        }
+        }],
+    }
 
 
 def test_simple_serialization(simple_chart, expected):
@@ -102,7 +104,9 @@ def test_subclass_merging(query):
                 'text': 'chart title',
             },
             'series': [{
-                'y': '$cube.measure',
+                'data': {
+                    'y': '$cube.measure',
+                },
             }],
             'a': {
                 'new': [{
