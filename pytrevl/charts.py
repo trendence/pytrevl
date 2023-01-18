@@ -6,7 +6,7 @@ from .dashboard import QueryingKwargsComponent, Dashboard
 from .utils import merge
 
 if TYPE_CHECKING:
-    from .cube import CubeQuery
+    from .cube import BaseCubeQuery
 
 def extract_dataframe(series, rendered_chart):
     df = pd.DataFrame.from_records(series["data"])
@@ -27,7 +27,7 @@ class BaseChart(QueryingKwargsComponent):
     """Base class for TREVL charts.
 
     This class helps building the ``display`` part of a TREVL chart. It
-    requires a :class:`CubeQuery` instance and accepts optional keyword
+    requires a :class:`BaseCubeQuery` instance and accepts optional keyword
     arguments. The mapping between keyword arguments and the attributes in
     the ``display`` part of the TREVL chart is defined in :attr:`_kw_paths`.
     The default ``display`` document is denfined in :attr:`_default`.
@@ -106,7 +106,7 @@ class LineChart(BaseChart):
 
     def __init__(
         self,
-        query: 'CubeQuery',
+        query: 'BaseCubeQuery',
         x: Optional[str]=None,
         y: Optional[str]=None,
         order_by: Optional[str]=None,

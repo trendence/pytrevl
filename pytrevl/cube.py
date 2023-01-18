@@ -28,10 +28,23 @@ class Computed:
     arguments: Optional[dict[str, str]] = field(default_factory=dict)
 
 
+class BaseCubeQuery:
+    def get_data(self, client=None):
+        if client is None:
+            client = cube()
+        resp = client.load(self.serialize(include_computed=False))
+        return pd.DataFrame.from_records(resp)
+
+    def __getitem__(self, field):
+        raise NotImplementedError('Method __getitem__ must be implemented in sub-class')
+
+    def serialize(self, include_computed=True):
+        raise NotImplementedError('Method serialize must be implemented in sub-class')
+
 
 @dataclass
-class CubeQuery:
-    """Wrapper for Cube.js-based TREVL queries.
+class CubeQuery(BaseCubeQuery):
+    """Wrapper for Cube.js-based TREVL queries using a single Cube.
 
     The query must reference a single Cube.js schema.
 
@@ -120,8 +133,60 @@ class CubeQuery:
             ret['computed'] = [self._serialize_computed(c) for c in self.computed]
         return ret
 
-    def get_data(self, client=None):
-        if client is None:
-            client = cube()
-        resp = client.load(self.serialize(include_computed=False))
-        return pd.DataFrame.from_records(resp)
+
+@dataclass
+class MultiCubeQuery(BaseCubeQuery):
+    """Wrapper for Cube.js-based TREVL queries using multiple cubes.
+
+    To reference a column for a chart component, use ``query['...']``, e.g.::
+
+        query['cubeName.measureName'] # (results in '$cubeName.measureName')
+
+    Note
+    ----
+    When creating a query, the columns (e.g. measures, dimensions, filter
+    members) **must** have the cube name as prefix!
+
+    Parameters
+    ----------
+    cube
+        The cube name.
+    measures
+        The measures to query.
+    dimensions
+        The dimensions to query.
+    filters
+        The filters to apply. See :class:`Filter`.
+    computed
+        Definitions for computed fields
+    """
+    measures: list[str] = field(default_factory=list)
+    dimensions: list[str] = field(default_factory=list)
+    filters: list[Filter] = field(default_factory=list)
+    computed: list[Computed] = field(default_factory=list)
+
+    def __getitem__(self, field):
+        """Get a reference for `field` in this query."""
+        computed_fields = {c.name for c in self.computed} 
+        if field in self.measures or field in self.dimensions or field in computed_fields:
+            return f"${field}"
+        raise KeyError(
+            f'Field {field!r} not found in query Available fields: '
+            ', '.join(sorted((*self.measures, *self.dimensions, *computed_fields)))
+        )
+
+    def serialize(self, include_computed=True) -> dict:
+        ret = {}
+
+        if self.measures:
+            ret['measures'] = self.measures
+
+        if self.dimensions:
+            ret['dimensions'] = self.dimensions
+
+        if self.filters:
+            ret['filters'] = self.filters
+
+        if include_computed and self.computed:
+            ret['computed'] = self.computed
+        return deepcopy(ret)
