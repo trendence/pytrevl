@@ -175,6 +175,17 @@ class MultiCubeQuery(BaseCubeQuery):
             ', '.join(sorted((*self.measures, *self.dimensions, *computed_fields)))
         )
 
+    def _serialize_filter(self, f: Filter) -> dict:
+        ret = {
+            'member': f'{f.member}',
+            'operator': f.operator,
+        }
+        if f.parameter:
+            ret['parameter'] = f.parameter
+        elif f.values:
+            ret['values'] = f.values
+        return ret
+
     def serialize(self, include_computed=True) -> dict:
         ret = {}
 
@@ -185,8 +196,9 @@ class MultiCubeQuery(BaseCubeQuery):
             ret['dimensions'] = self.dimensions
 
         if self.filters:
-            ret['filters'] = self.filters
+            ret['filters'] = [self._serialize_filter(f) for f in self.filters]
 
         if include_computed and self.computed:
             ret['computed'] = self.computed
+
         return deepcopy(ret)
