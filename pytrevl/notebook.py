@@ -4,7 +4,7 @@ import json
 
 def render_component(comp, *args, **kwargs):
     if comp['type'] == 'chart':
-        return chart_iframe(comp, *args, **kwargs)
+        return render_chart(comp, *args, **kwargs)
     if comp['type'] == 'score':
         return render_score(comp, *args, **kwargs)
     raise ValueError(f"Unknown component type {comp['type']!r}")
@@ -37,6 +37,12 @@ _highcharts_template = """
 </html>
 """
 
+_score_template = """
+<div>
+  <p>{value} {unit} (rounded to {digits})</p>
+  <p>{text}</p>
+</div>"""
+
 def render_chart(chart_options, width=800, height=400, template=None):
     """Build IFrame from Highcharts chart options."""
     if template is None:
@@ -47,12 +53,6 @@ def render_chart(chart_options, width=800, height=400, template=None):
     src_doc = html.escape(page_src).replace('\n', ' ')
     return f"""<iframe width={width} height={height} srcdoc="{src_doc}"></iframe>"""
 
-
-_score_template = """
-<div>
-  <p>{value} {unit} (rounded to {digits})</p>
-  <p>{text}</p>
-</div>"""
 def render_score(comp):
     defaults = {
         'unit': 'no-unit',
