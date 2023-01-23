@@ -15,7 +15,7 @@ __author__ = 'Trendence Institut'
 from .charts import (
     BarChart,
     ColumnChart,
-    CustomChart
+    CustomChart,
     DonutChart,
     LineChart,
     PieChart,
