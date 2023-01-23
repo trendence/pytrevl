@@ -2,8 +2,15 @@
 import html
 import json
 
+def render_component(comp, *args, **kwargs):
+    if comp['type'] == 'chart':
+        return chart_iframe(comp, *args, **kwargs)
+    if comp['type'] == 'score':
+        return render_score(comp, *args, **kwargs)
+    raise ValueError(f"Unknown component type {comp['type']!r}")
+
 # Default template for the IFrame source
-_default_template = """
+_highcharts_template = """
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -30,12 +37,26 @@ _default_template = """
 </html>
 """
 
-def chart_iframe(chart_options, width=800, height=400, template=None):
+def render_chart(chart_options, width=800, height=400, template=None):
     """Build IFrame from Highcharts chart options."""
     if template is None:
-        template = _default_template
+        template = _highcharts_template
 
     page_src = template.format(options=json.dumps(chart_options))
     # We need to HTML-escape the source document
     src_doc = html.escape(page_src).replace('\n', ' ')
     return f"""<iframe width={width} height={height} srcdoc="{src_doc}"></iframe>"""
+
+
+_score_template = """
+<div>
+  <p>{value} {unit} (rounded to {digits})</p>
+  <p>{text}</p>
+</div>"""
+def render_score(comp):
+    defaults = {
+        'unit': 'no-unit',
+        'digits': 'no-digits',
+        'text': 'no-text',
+    }
+    return _score_template.format(**{**defaults, **comp})

@@ -1,16 +1,12 @@
-from dataclasses import dataclass, field
 from typing import Literal, Optional,TYPE_CHECKING, Union
-from uuid import uuid4
 import pandas as pd
 import yaml
 
-from .api import xmiddle
-from .notebook import chart_iframe
-from .utils import insert, merge, AsSomethingMixin
+from .dashboard import QueryingKwargsComponent, Dashboard
+from .utils import merge
 
 if TYPE_CHECKING:
-    from .api import XMiddleService
-    from .cube import CubeQuery
+    from .cube import BaseCubeQuery
 
 def extract_dataframe(series, rendered_chart):
     df = pd.DataFrame.from_records(series["data"])
@@ -26,29 +22,12 @@ def extract_dataframe(series, rendered_chart):
         df["y"] = df["y"].map(m)
     return df
 
-class _MergeWithBase(type):
-    """Helper to merge ``_kw_paths`` and ``_default`` of all parent classes
-    into ``kw_paths`` and ``default``, respectively.
-    """
-    def __init__(cls, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
-        # Merge the kw_paths mapping
-        cls.kw_paths = {}
-        for c in reversed(cls.mro()):
-            cls.kw_paths.update(getattr(c, '_kw_paths', {}))
-
-        # Merge the default config
-        cls.default = {}
-        for c in reversed(cls.mro()):
-            cls.default = merge(cls.default, getattr(c, '_default', {}))
-
-
-class BaseChart(AsSomethingMixin, metaclass=_MergeWithBase):
+class BaseChart(QueryingKwargsComponent):
     """Base class for TREVL charts.
 
     This class helps building the ``display`` part of a TREVL chart. It
-    requires a :class:`CubeQuery` instance and accepts optional keyword
+    requires a :class:`BaseCubeQuery` instance and accepts optional keyword
     arguments. The mapping between keyword arguments and the attributes in
     the ``display`` part of the TREVL chart is defined in :attr:`_kw_paths`.
     The default ``display`` document is denfined in :attr:`_default`.
@@ -69,6 +48,7 @@ class BaseChart(AsSomethingMixin, metaclass=_MergeWithBase):
     :attr:`default` and :attr:`kw_paths` via the meta-class
     :class:`MergeWithBase`.
     """
+    type = 'chart'
 
     _default: dict = {
         'chart': {
@@ -87,62 +67,10 @@ class BaseChart(AsSomethingMixin, metaclass=_MergeWithBase):
         'y': 'series.0.data.y',
         'z': 'series.0.data.z',
     }
-
-    def __init__(self, query: 'CubeQuery', id: Optional[str]=None, **kwargs):
-        self.query = query
-        self.id = id or f'{type(self).__name__}-{uuid4().hex}'
-        self.kwargs = kwargs
-        self.custom = {}
-
-    def __str__(self):
-        return f'<{type(self).__name__} id:{self.id}>'
-
-    def __add__(self, other):
-        if isinstance(other, BaseChart):
-            return Dashboard(components=[self, other])
-        return NotImplemented
-
-    def __setitem__(self, path, value):
-        self.custom = insert(value, path, self.custom)
-
-    def _filter_locals(self, l, filtered=None):
-        filtered = filtered or {'kwargs', 'self', '__class__'}
-        return {
-            k: v for k, v in l.items() if k not in filtered
-            }
-
-    def serialize(self):
-        dynamic = {}
-        for name, value in self.kwargs.items():
-            if name not in self.kw_paths:
-                raise ValueError(f'{type(self).__name__} received unknown keyword argument {name!r}. Supported arguments are: {", ".join(sorted(self.kw_paths))}')
-            dest = self.kw_paths[name]
-            dynamic = insert(value, dest, dynamic)
-
-        display = self.default
-        display = merge(display, dynamic)
-        display = merge(display, self.custom)
-
-        queries = [self.query.serialize()]
-        return {
-            'type': 'chart',
-            'id': self.id,
-            'display': display,
-            'queries': queries,
-        }
-
-    def show(self, *args, **kwargs):
-        return Dashboard(components=[self]).show(*args, **kwargs)
-
-    def render(self, *args, **kwargs):
-        resp = Dashboard(components=[self]).render(*args, **kwargs)
-        return resp["components"][0]
-
     def get_data(self, *args, **kwargs):
         resp = self.render(*args, **kwargs)
         dfs = [extract_dataframe(series, resp) for series in resp["series"]]
         return pd.concat(dfs, ignore_index=True)
-
 
 
 class LineChart(BaseChart):
@@ -178,7 +106,7 @@ class LineChart(BaseChart):
 
     def __init__(
         self,
-        query: 'CubeQuery',
+        query: 'BaseCubeQuery',
         x: Optional[str]=None,
         y: Optional[str]=None,
         order_by: Optional[str]=None,
@@ -300,53 +228,3 @@ class CustomChart(BaseChart):
     @classmethod
     def from_yaml(cls, code: str):
         return cls(yaml.safe_load(code))
-
-@dataclass
-class Dashboard(AsSomethingMixin):
-    description: str = ""
-    components: list = field(default_factory=list)
-
-    def serialize(self):
-        data = {}
-        # Add description before components to have them at the top of the
-        # serialized object.
-        if self.description:
-            data['description'] = self.description
-
-        data['components'] = [c.serialize() for c in self.components]
-
-        return data
-
-    def __add__(self, other):
-        if isinstance(other, Dashboard):
-            return Dashboard(self.description, self.components + other.components)
-        elif isinstance(other, BaseChart):
-            return Dashboard(self.description, self.components + [other])
-
-    def __radd__(self, other):
-        if isinstance(other, Dashboard):
-            return Dashboard(self.description, other.components + self.components)
-        elif isinstance(other, BaseChart):
-            return Dashboard(self.description, [other] + self.components)
-
-    def __iadd__(self, other):
-        if isinstance(other, Dashboard):
-            self.components.extend(other.components)
-            return self
-        elif isinstance(other, BaseChart):
-            self.components.append(other)
-            return self
-        return NotImplemented
-
-    def render(self, api_client: 'XMiddleService'=None, **kwargs):
-        if api_client is None:
-            api_client = xmiddle()
-
-        return api_client(self, **kwargs)
-
-    def show(self, *args, **kwargs):
-        from IPython.display import HTML
-        body = self.render(*args, **kwargs)
-
-        iframes = [chart_iframe(comp) for comp in body['components']]
-        return HTML('\n'.join(iframes))

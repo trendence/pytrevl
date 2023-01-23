@@ -13,13 +13,21 @@ __version__ = '0.2.1'
 __author__ = 'Trendence Institut'
 
 from .charts import (
+    BarChart,
     ColumnChart,
-    Dashboard,
+    CustomChart
     DonutChart,
     LineChart,
     PieChart,
-    BarChart,
     StackedBarChart,
-    CustomChart
 )
-from .cube import CubeQuery, Computed, Filter
+from .components import (
+    ScoreComponent,
+)
+from .cube import (
+    Computed,
+    CubeQuery,
+    Filter,
+    MultiCubeQuery,
+)
+from .dashboard import Dashboard

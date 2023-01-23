@@ -1,6 +1,6 @@
 import pytest
 
-from pytrevl.cube import Computed, CubeQuery
+from pytrevl.cube import Computed, CubeQuery, MultiCubeQuery
 
 @pytest.fixture
 def query():
@@ -41,3 +41,14 @@ def test_using_computed(query):
     # Unknown computed fields throw an error
     with pytest.raises(KeyError):
         query['c-3']
+
+
+def test_multicube_query():
+    query = MultiCubeQuery(['cubeA.meas1', 'cubeB.meas2'], ['cubeA.dim1', 'cubeB.dim2'])
+    assert query.serialize() == {
+        'measures': ['cubeA.meas1', 'cubeB.meas2'],
+        'dimensions': ['cubeA.dim1', 'cubeB.dim2'],
+    }
+
+    assert query['cubeA.meas1'] == '$cubeA.meas1'
+    assert query['cubeA.meas1'] == '$cubeA.meas1'
