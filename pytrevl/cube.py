@@ -1,4 +1,4 @@
-"""Containers for Cube.js based queries in TREVL."""
+"""Containers for queries in TREVL."""
 from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Optional
@@ -6,9 +6,46 @@ import pandas as pd
 
 from .api import cube
 
+
+@dataclass
+class Computed:
+    """Container for computed field in TREVL queries."""
+    name: str
+    code: str
+    arguments: Optional[dict[str, str]] = field(default_factory=dict)
+
+@dataclass
+class SqlQuery:
+    sql: str
+    computed: list[Computed] = field(default_factory=list)
+
+    def _serialize_computed(self, c: Computed) -> dict:
+        ret = {
+            'name': c.name,
+            'code': c.code,
+        }
+
+        if c.arguments:
+            ret['arguments'] = {
+                dst: f'${src}'
+                for dst, src in c.arguments.items()
+                }
+        return ret
+
+    def serialize(self, include_computed = True) -> dict:
+        ret = {
+            'sql': self.sql,
+        }
+
+        if include_computed and self.computed:
+            ret['computed'] = [self._serialize_computed(c) for c in self.computed]
+        return ret
+
+
+# Cube queries
 @dataclass
 class Filter:
-    """Container around TREVL filters."""
+    """Container around TREVL/Cube filters."""
     # The column name without the cube name
     member: str
     operator: str
@@ -18,14 +55,6 @@ class Filter:
     def __post_init__(self):
         if self.values is None and self.parameter is None:
             raise ValueError('Filter must have either values or parameter')
-
-
-@dataclass
-class Computed:
-    """Container for computed field in TREVL queries."""
-    name: str
-    code: str
-    arguments: Optional[dict[str, str]] = field(default_factory=dict)
 
 
 class BaseCubeQuery:
