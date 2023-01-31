@@ -29,5 +29,6 @@ from .cube import (
     CubeQuery,
     Filter,
     MultiCubeQuery,
+    SqlQuery,
 )
 from .dashboard import Dashboard
